@@ -55,7 +55,7 @@ jobs:
             rm -f /home/borislav_tomov/app-prod/project-0.0.1-SNAPSHOT.jar
             
             # Move the new jar file
-            mv my-temp-download-dir/project-0.0.1-SNAPSHOT.jar /home/borislav_tomov/app-prod/
+            mv my-temp-download-dir/java-app-artifact/project-0.0.1-SNAPSHOT.jar /home/borislav_tomov/app-prod/
             
             # Restart the application as a service
             sudo systemctl start project-0.0.1-SNAPSHOT.service
