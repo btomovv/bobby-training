@@ -39,9 +39,9 @@ jobs:
 
     
       - name: Deploy to GCP VM
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.GCP_VM_IP }} # The IP of your GCP VM
+          host: ${{ secrets.GCP_VM_IP }}
           username: borislav_tomov
           key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
           source: 'project-0.0.1-SNAPSHOT.jar'
