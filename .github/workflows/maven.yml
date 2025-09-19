@@ -41,8 +41,9 @@ jobs:
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.GCP_VM_IP }} # The IP of your GCP VM
-          username: YOUR_GCP_VM_USER # The username you SSH with
+          username: ${{ secrets.YOUR_GCP_VM_USER }} # The username you SSH with
           key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          #debug: true
           script: |
             # Stop the old application
             sudo systemctl stop project-0.0.1-SNAPSHOT
