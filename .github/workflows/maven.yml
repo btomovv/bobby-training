@@ -57,4 +57,28 @@ jobs:
             # Restart the application as a service
             sudo systemctl start project-0.0.1-SNAPSHOT.service
 
+            deploy:
+            runs-on: ubuntu-latest
+            needs: build
+            steps:
+            - name: Download artifact
+            uses: actions/download-artifact@v4
+            with:
+            name: java-app-artifact
+            - name: Deploy to GCP VM
+            uses: appleboy/ssh-action@v1.0.0
+            with:
+            host: ${{ secrets.GCP_VM_IP }}
+            username: borislav_tomov
+            key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+            sync: true
+            source: 'project-0.0.1-SNAPSHOT.jar'
+            target: '/home/borislav_tomov/app-prod/'
+            script: |
+            # Stop the old application
+            sudo systemctl stop project-0.0.1-SNAPSHOT.service || true
+            
+            # Restart the new application as a service
+            sudo systemctl start project-0.0.1-SNAPSHOT.service
+
    
