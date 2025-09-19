@@ -36,7 +36,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: java-app-artifact
-          path: java-app-artifact
 
     
       - name: Deploy to GCP VM
@@ -45,6 +44,8 @@ jobs:
           host: ${{ secrets.GCP_VM_IP }} # The IP of your GCP VM
           username: borislav_tomov
           key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          source: 'project-0.0.1-SNAPSHOT.jar'
+          target: '/home/borislav_tomov/app-prod/'
           #debug: true
           script: |
             # Stop the old application
@@ -52,9 +53,6 @@ jobs:
 
             # Remove old jar file
             rm -f /home/borislav_tomov/app-prod/project-0.0.1-SNAPSHOT.jar
-            
-            # Move the new jar file
-            mv project-0.0.1-SNAPSHOT.jar /home/borislav_tomov/app-prod/
             
             # Restart the application as a service
             sudo systemctl start project-0.0.1-SNAPSHOT.service
