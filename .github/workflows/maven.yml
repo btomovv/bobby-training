@@ -37,22 +37,47 @@ jobs:
         with:
           name: java-app-artifact
 
+      # - name: Deploy to GCP VM
+      #   uses: appleboy/ssh-action@v0.1.7
+      #   with:
+      #     host: ${{ secrets.GCP_VM_IP }} # The IP of your GCP VM
+      #     username: ${{ secrets.YOUR_GCP_VM_USER }} # The username you SSH with
+      #     key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+      #     #debug: true
+      #     script: |
+      #       # Stop the old application
+      #       sudo systemctl stop project-0.0.1-SNAPSHOT
+
+      #       # Remove old jar file
+      #       rm -f project/target/project-0.0.1-SNAPSHOT.jar
+            
+      #       # Move the new jar file
+      #       mv your-app-name.jar ~/app-prod
+
+      #       # Restart the application as a service
+      #       sudo systemctl start project-0.0.1-SNAPSHOT
+
       - name: Deploy to GCP VM
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.GCP_VM_IP }} # The IP of your GCP VM
-          username: ${{ secrets.YOUR_GCP_VM_USER }} # The username you SSH with
-          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
-          #debug: true
-          script: |
-            # Stop the old application
-            sudo systemctl stop project-0.0.1-SNAPSHOT
+  uses: appleboy/ssh-action@v0.1.7
+  with:
+    host: ${{ secrets.GCP_VM_IP }}
+    username: borislav_tomov # Use your actual username here
+    key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+    #debug: true
+    script: |
+      # Stop the old application. Using '|| true' allows the script to continue if the service isn't running.
+      sudo systemctl stop project-0.0.1-SNAPSHOT.service || true
 
-            # Remove old jar file
-            rm -f ~/app-prod/project-0.0.1-SNAPSHOT.jar
+      # The GitHub Actions runner places the built artifact in the root of the runner's workspace.
+      # The `download-artifact` step will place the JAR at the root of the workspace.
+      # You should have a `project-0.0.1-SNAPSHOT.jar` file at the root.
 
-            # Move the new jar file
-            mv your-app-name.jar ~/app-prod
+      # First, remove the old JAR file on the VM.
+      rm -f /home/borislav_tomov/app-prod/project-0.0.1-SNAPSHOT.jar
 
-            # Restart the application as a service
-            sudo systemctl start project-0.0.1-SNAPSHOT
+      # Then, move the new JAR file from the GitHub runner's workspace to your VM.
+      # You need to specify the source file name correctly.
+      mv project-0.0.1-SNAPSHOT.jar /home/borislav_tomov/app-prod/project-0.0.1-SNAPSHOT.jar
+
+      # Restart the application as a service.
+      sudo systemctl start project-0.0.1-SNAPSHOT.service
