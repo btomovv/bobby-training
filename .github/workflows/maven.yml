@@ -86,7 +86,7 @@ name: CI/CD Pipeline - Deploy to GCP VM
 on:
   push:
     branches:
-      - main   # adjust if needed
+      - main
 
 jobs:
   build-and-deploy:
@@ -103,6 +103,7 @@ jobs:
           java-version: '17'
 
       - name: Build with Maven
+        working-directory: project     
         run: mvn clean package -DskipTests
 
       - name: Add SSH key
@@ -114,8 +115,10 @@ jobs:
 
       - name: Deploy to GCP VM
         run: |
-          scp -i ~/.ssh/gcp_vm_key target/*.jar borislav_tomov@${{ secrets.GCP_VM_IP }}:/home/borislav_tomov/app-prod/app.jar
-          ssh -i ~/.ssh/gcp_vm_key borislav_tomov@${{ secrets.GCP_VM_IP }} "
+          # Copy jar from project/target
+          scp -i ~/.ssh/gcp_vm_key project/target/*.jar borislav_tomov@${{ secrets.GCP_VM_IP }}:/home/borislav_tomov/app-prod/app.jar
+          # Restart app on remote VM
+          ssh -i ~/.ssh/gcp_vm_key borislav_tomov@${{ secrets.GCP_VM_IP }} << 'EOF'
             pkill -f 'java -jar' || true
-            nohup java -jar /home/borislav_tomov/app-prod/app.jar > app.log 2>&1 &
-          "
+            nohup java -jar /home/borislav_tomov/app-prod/app.jar > /home/borislav_tomov/app-prod/app.log 2>&1 &
+          EOF
