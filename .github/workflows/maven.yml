@@ -1,0 +1,56 @@
+name: Java CI/CD to GCP VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: java-app-artifact
+          path: target/*.jar
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: java-app-artifact
+
+      - name: Deploy to GCP VM
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.GCP_VM_IP }} # The IP of your GCP VM
+          username: YOUR_GCP_VM_USER # The username you SSH with
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          script: |
+            # Stop the old application
+            sudo systemctl stop project-0.0.1-SNAPSHOT
+
+            # Remove old jar file
+            rm -f ~/app-prod/project-0.0.1-SNAPSHOT.jar
+
+            # Move the new jar file
+            mv your-app-name.jar ~/app-prod
+
+            # Restart the application as a service
+            sudo systemctl start project-0.0.1-SNAPSHOT
